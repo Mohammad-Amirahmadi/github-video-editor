@@ -9,21 +9,33 @@ jobs:
 
     steps:
 
-      - name: Install FFmpeg and LFTP
+      # ==============================
+      # Install FFmpeg
+      # ==============================
+      - name: Install FFmpeg
         run: |
           sudo apt update
-          sudo apt install -y ffmpeg lftp
+          sudo apt install -y ffmpeg
 
+      # ==============================
+      # Download video
+      # ==============================
       - name: Download video
         run: |
           wget -O video.mp4 "https://apitest1403.ir/github_action/video.mp4"
           ls -lh video.mp4
 
+      # ==============================
+      # Download watermark
+      # ==============================
       - name: Download watermark
         run: |
           wget -O logo.png "https://apitest1403.ir/github_action/logo.png"
           ls -lh logo.png
 
+      # ==============================
+      # Add watermark
+      # ==============================
       - name: Add watermark
         run: |
           ffmpeg \
@@ -33,65 +45,49 @@ jobs:
             -c:a copy \
             output.mp4
 
+      # ==============================
+      # Check output
+      # ==============================
       - name: Check output
         run: |
           ls -lh output.mp4
+
           ffprobe \
             -v error \
             -show_entries format=duration,size \
             -of default=noprint_wrappers=1 \
             output.mp4
 
-      - name: Test FTP connection
-        env:
-          FTP_HOST: ftp.apitest1403.ir
-          FTP_USERNAME: ftp_account@apitest1403.ir
-          FTP_PASSWORD: q2!w=C3sXei+na@w
-        run: |
-          echo "FTP HOST: $FTP_HOST"
-          echo "FTP USER: $FTP_USERNAME"
-
-          lftp -d -c "
-            set ftp:ssl-force false
-            set ftp:ssl-protect-data false
-            set ftp:passive-mode true
-            set net:timeout 30
-            set net:max-retries 2
-            open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST
-            pwd
-            ls
-            bye
-          "
-
+      # ==============================
+      # Upload to PHP API
+      # ==============================
       - name: Upload output to hosting
         env:
-          FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          UPLOAD_SECRET: ${{ secrets.UPLOAD_SECRET }}
+
         run: |
-          lftp -d -c "
-            set ftp:ssl-force false
-            set ftp:ssl-protect-data false
-            set ftp:passive-mode true
-            set net:timeout 60
-            set net:max-retries 3
+          echo "Uploading output.mp4..."
 
-            open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST
+          curl \
+            --fail \
+            --show-error \
+            --silent \
+            -X POST \
+            -F "secret=$UPLOAD_SECRET" \
+            -F "video=@output.mp4" \
+            "https://apitest1403.ir/github_action/upload.php"
 
-            pwd
-            ls
+          echo ""
+          echo "Upload request completed."
 
-            cd public_html/github_action
-
-            put output.mp4 -o output.mp4
-
-            ls -lh output.mp4
-
-            bye
-          "
-
+      # ==============================
+      # Verify
+      # ==============================
       - name: Verify upload
         run: |
-          echo "Upload finished."
-          echo "Expected URL:"
+          echo "======================================"
+          echo "UPLOAD COMPLETED"
+          echo "======================================"
+          echo ""
+          echo "Output URL:"
           echo "https://apitest1403.ir/github_action/output.mp4"
