@@ -63,19 +63,19 @@ jobs:
       # ==============================
       - name: Upload output to hosting
         env:
-           UPLOAD_SECRET: ${{ secrets.UPLOAD_SECRET }}
+          UPLOAD_SECRET: ${{ secrets.UPLOAD_SECRET }}
 
         run: |
           echo "Uploading output.mp4..."
 
-curl \
-  --fail \
-  --show-error \
-  --silent \
-  -X POST \
-  -F "secret=$UPLOAD_SECRET" \
-  -F "video=@output.mp4" \
-  "https://apitest1403.ir/github_action/upload.php"
+          curl \
+            --fail \
+            --show-error \
+            --silent \
+            -X POST \
+            -F "secret=$UPLOAD_SECRET" \
+            -F "video=@output.mp4" \
+            "https://apitest1403.ir/github_action/upload.php"
 
           echo ""
           echo "Upload request completed."
