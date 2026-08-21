@@ -63,7 +63,7 @@ jobs:
       # ==============================
       - name: Upload output to hosting
         env:
-          UPLOAD_SECRET: ${{ secrets.UPLOAD_SECRET }}
+          UPLOAD_SECRET: 'abc123XYZ789_test_2026'
 
         run: |
           echo "Uploading output.mp4..."
