@@ -36,7 +36,6 @@ jobs:
       - name: Check output
         run: |
           ls -lh output.mp4
-
           ffprobe \
             -v error \
             -show_entries format=duration,size \
@@ -49,72 +48,50 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          echo "Testing FTP connection..."
+          echo "FTP HOST: $FTP_HOST"
+          echo "FTP USER: $FTP_USERNAME"
 
           lftp -d -c "
             set ftp:ssl-force false
+            set ftp:ssl-protect-data false
             set ftp:passive-mode true
-            set net:timeout 20
+            set net:timeout 30
             set net:max-retries 2
-            open ftp://$FTP_HOST
-            user $FTP_USERNAME $FTP_PASSWORD
+            open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST
             pwd
             ls
             bye
           "
 
-      - name: Upload output
+      - name: Upload output to hosting
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          echo "Uploading output.mp4..."
-
           lftp -d -c "
             set ftp:ssl-force false
+            set ftp:ssl-protect-data false
             set ftp:passive-mode true
-            set net:timeout 30
-            set net:max-retries 2
+            set net:timeout 60
+            set net:max-retries 3
 
-            open ftp://$FTP_HOST
-            user $FTP_USERNAME $FTP_PASSWORD
+            open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST
 
             pwd
             ls
 
-            cd public_html
-            ls
-
-            cd github_action
-            ls
+            cd public_html/github_action
 
             put output.mp4 -o output.mp4
 
-            ls
+            ls -lh output.mp4
+
             bye
           "
 
       - name: Verify upload
-        env:
-          FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          echo "Checking uploaded file..."
-
-          lftp -c "
-            set ftp:ssl-force false
-            open ftp://$FTP_HOST
-            user $FTP_USERNAME $FTP_PASSWORD
-            cd public_html/github_action
-            ls -lh output.mp4
-            bye
-          "
-
-      - name: Done
-        run: |
-          echo "======================================"
-          echo "UPLOAD SUCCESSFUL"
-          echo "======================================"
+          echo "Upload finished."
+          echo "Expected URL:"
           echo "https://apitest1403.ir/github_action/output.mp4"
