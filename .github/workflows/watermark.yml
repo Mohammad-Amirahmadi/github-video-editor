@@ -8,10 +8,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Install FFmpeg
         run: |
           sudo apt update
-          sudo apt install -y ffmpeg
+          sudo apt install -y ffmpeg lftp
 
       - name: Download video
         run: |
@@ -38,5 +39,29 @@ jobs:
       - name: Check output
         run: |
           ls -lh output.mp4
-          ffprobe -v error -show_entries format=duration,size \
-            -of default=noprint_wrappers=1 output.mp4
+
+          ffprobe \
+            -v error \
+            -show_entries format=duration,size \
+            -of default=noprint_wrappers=1 \
+            output.mp4
+
+      - name: Upload output to hosting
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          lftp -c "
+            set ftp:ssl-force false
+            set ftp:passive-mode true
+            open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST
+            cd public_html/github_action
+            put output.mp4
+            bye
+          "
+
+      - name: Done
+        run: |
+          echo "Upload completed successfully."
+          echo "https://apitest1403.ir/github_action/output.mp4"
