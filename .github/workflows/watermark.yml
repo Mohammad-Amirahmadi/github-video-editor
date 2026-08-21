@@ -15,11 +15,11 @@ jobs:
 
       - name: Download video
         run: |
-          wget "https://YOUR-DOMAIN.ir/github_action/video.mp4" -O video.mp4
+          wget "https://apitest1403.ir/github_action/video.mp4" -O video.mp4
 
       - name: Download watermark
         run: |
-          wget "https://YOUR-DOMAIN.ir/github_action/logo.png" -O logo.png
+          wget "https://apitest1403.ir/github_action/logo.png" -O logo.png
 
       - name: Check files
         run: |
