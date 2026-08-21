@@ -13,6 +13,30 @@ jobs:
           sudo apt update
           sudo apt install -y ffmpeg
 
-      - name: Check FFmpeg
+      - name: Download video
         run: |
-          ffmpeg -version
+          wget "https://YOUR-DOMAIN.ir/github_action/video.mp4" -O video.mp4
+
+      - name: Download watermark
+        run: |
+          wget "https://YOUR-DOMAIN.ir/github_action/logo.png" -O logo.png
+
+      - name: Check files
+        run: |
+          ls -lh video.mp4
+          ls -lh logo.png
+
+      - name: Add watermark
+        run: |
+          ffmpeg \
+            -i video.mp4 \
+            -i logo.png \
+            -filter_complex "[1:v]scale=200:-1[logo];[0:v][logo]overlay=W-w-30:30" \
+            -c:a copy \
+            output.mp4
+
+      - name: Check output
+        run: |
+          ls -lh output.mp4
+          ffprobe -v error -show_entries format=duration,size \
+            -of default=noprint_wrappers=1 output.mp4
