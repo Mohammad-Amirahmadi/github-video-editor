@@ -44,9 +44,9 @@ jobs:
 
       - name: Test FTP connection
         env:
-          FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_HOST: ftp.apitest1403.ir
+          FTP_USERNAME: ftp_account@apitest1403.ir
+          FTP_PASSWORD: q2!w=C3sXei+na@w
         run: |
           echo "FTP HOST: $FTP_HOST"
           echo "FTP USER: $FTP_USERNAME"
